@@ -76,6 +76,13 @@
       display: block;
     }
 
+    #ytIframeSlot {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
     .empty-state {
       position: absolute;
       inset: 0;
@@ -574,13 +581,7 @@
           <span class="empty-text">No video playing</span>
         </div>
 
-        <iframe
-          class="yt-iframe"
-          id="ytIframe"
-          allow="autoplay; encrypted-media; picture-in-picture"
-          allowfullscreen
-          style="display:none;"
-        ></iframe>
+        <div id="ytIframeSlot"></div>
 
         <div class="overlay" id="overlay">
           <button class="open-btn" id="openBtn" aria-label="Play YouTube URL" title="Play YouTube URL">
@@ -760,19 +761,35 @@
     _showVideo(videoId) {
       this._currentVideoId = videoId;
       const shadow = this.shadowRoot;
-      const iframe = shadow.getElementById('ytIframe');
+      const slot   = shadow.getElementById('ytIframeSlot');
       const empty  = shadow.getElementById('emptyState');
-      if (!iframe) return;
+      if (!slot) return;
 
-      // Plain embed URL — avoids IFrame API initialisation errors entirely
+      // Always destroy and recreate the iframe so the allow attribute is set
+      // BEFORE any src is assigned — this is critical for autoplay & embed
+      // permissions inside shadow DOMs.
+      slot.innerHTML = '';
+
+      const iframe = document.createElement('iframe');
+      iframe.className = 'yt-iframe';
+
+      // Must be set before src — browsers snapshot permissions at creation time
+      iframe.setAttribute('allow', 'autoplay; fullscreen; encrypted-media; picture-in-picture');
+      iframe.setAttribute('allowfullscreen', '');
+      iframe.setAttribute('referrerpolicy', 'origin');
+
+      // origin= tells YouTube exactly which domain is embedding it — required
+      // to avoid Error 153 inside non-standard rendering contexts like HA.
       const params = new URLSearchParams({
         autoplay:       '1',
         rel:            '0',
         modestbranding: '1',
         playsinline:    '1',
+        origin:         window.location.origin,
       });
       iframe.src = `https://www.youtube.com/embed/${videoId}?${params}`;
-      iframe.style.display = 'block';
+
+      slot.appendChild(iframe);
       if (empty) empty.style.display = 'none';
     }
   }
