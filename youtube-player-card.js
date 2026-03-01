@@ -112,15 +112,19 @@
       padding: 14px;
       opacity: 0;
       transition: opacity 0.22s ease;
+      /* Always none so clicks pass straight through to the YouTube iframe */
       pointer-events: none;
       z-index: 10;
     }
 
     @media (hover: hover) {
-      .card:hover .overlay { opacity: 1; pointer-events: all; }
+      .card:hover .overlay { opacity: 1; }
     }
 
-    .card.overlay-visible .overlay { opacity: 1; pointer-events: all; }
+    .card.overlay-visible .overlay { opacity: 1; }
+
+    /* Only the button itself catches pointer events */
+    .open-btn { pointer-events: all; }
 
     .open-btn {
       width: 42px;
