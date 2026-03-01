@@ -1,0 +1,8 @@
+{
+  "name": "YouTube Player Card",
+  "description": "A Mac-style YouTube media player Lovelace card with URL history and Google account integration.",
+  "render_readme": false,
+  "content_in_root": false,
+  "filename": "youtube-player-card.js",
+  "homeassistant": "2023.9.0"
+}
